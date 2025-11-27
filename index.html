@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Python Terminal on GitHub Pages</title>
     
-    <!-- Load modern PyScript via CDN -->
+    <!-- Load modern PyScript CSS and JS files from their public CDN -->
     <link rel="stylesheet" href="pyscript.net" />
     <script defer src="pyscript.net"></script>
 
@@ -31,17 +31,13 @@
             width: 90%;
             margin-top: 20px;
             padding: 5px;
-            /* Ensure it is displayed as a block element */
             display: block; 
         }
     </style>
 
     <!-- 
       *** CRITICAL WORKAROUND FOR GITHUB PAGES ***
-      
-      This script adds necessary Cross-Origin security headers required for web workers 
-      to function correctly on static hosts like GitHub Pages.
-      If workers still don't run, GitHub Pages might be too restrictive.
+      This script from unpkg.com sets Cross-Origin security headers needed for PyScript web workers.
     -->
     <script src="unpkg.com"></script>
 
@@ -49,10 +45,9 @@
 <body>
 
     <h1>Web-Based Python REPL (Modern PyScript)</h1>
-    <p>This is a live Python environment running in your browser via PyScript/Pyodide. The workaround script above attempts to enable worker mode on GitHub Pages.</p>
+    <p>This is a live Python environment running in your browser via PyScript/Pyodide. The workaround script helps enable worker mode on static hosts.</p>
     
-    <!-- Modern way to create an interactive terminal (REPL) -->
-    <!-- The `worker` attribute attempts to run Python in a web worker thread -->
+    <!-- Use the modern <py-terminal> element with the 'worker' attribute -->
     <py-terminal worker></py-terminal>
     
 </body>
