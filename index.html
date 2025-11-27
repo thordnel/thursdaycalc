@@ -1,44 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Python Terminal on GitHub Pages</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thursday Finder</title>
 
-    <!-- Correct PyScript CDN links -->
-    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
-    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+<link rel="stylesheet" href="https://pyscript.net/releases/2024.2.1/core.css">
+<script type="module" src="https://pyscript.net/releases/2024.2.1/core.js"></script>
 
-    <style>
-        body {
-            background-color: #000;
-            color: #00FF00;
-            font-family: Consolas, Monaco, monospace;
-            margin: 0;
-            padding: 20px;
-            overflow: hidden;
-        }
-        h1, p { color: #DDD; }
-        py-terminal {
-            background-color: #000;
-            border: 2px solid #00FF00;
-            min-height: 500px;
-            width: 90%;
-            margin-top: 20px;
-            padding: 5px;
-            display: block;
-        }
-    </style>
-
-    <!-- GitHub Pages worker CORS workaround -->
-    <script src="https://unpkg.com/pyscript/lib-worker-hack"></script>
+<style>
+body { font-family: serif; max-width: 720px; margin: auto; padding: 20px; }
+input, button { padding: 6px; font-size: 16px; }
+#output { border: 1px solid #999; padding: 10px; height: 260px; overflow-y: auto; white-space: pre-wrap; }
+</style>
 </head>
 <body>
 
-    <h1>Web-Based Python REPL (Modern PyScript)</h1>
-    <p>This is a live Python environment running in your browser.</p>
+<h2>Thursday Date Finder (1870–1923)</h2>
 
-    <py-terminal worker></py-terminal>
+<label>Day: </label>
+<input id="dayInput" type="number" min="1" max="31" value="24">
+
+<br><br>
+
+<label>Filter months (comma-separated, optional): </label><br>
+<input id="monthFilter" type="text" placeholder="e.g. 1,3,5">
+
+<br><br>
+
+<label><input type="radio" name="cal" value="greg" checked> Gregorian</label>
+<label><input type="radio" name="cal" value="jul"> Julian</label>
+
+<br><br>
+
+<button onclick="run_calc()">Find Thursdays</button>
+<button onclick="download_results()">Download</button>
+
+<h3>Results</h3>
+<div id="output"></div>
+
+<!-- Python -->
+<py-script>
+
+from datetime import datetime, timedelta
+from collections import defaultdict
+
+def find_thursday_months(target_day, filter_months):
+    years = range(1870, 1924)
+    months = range(1, 13)
+    out = defaultdict(list)
+
+    for y in years:
+        for m in months:
+            try:
+                if datetime(y, m, target_day).weekday() == 3:
+                    if not filter_months or m in filter_months:
+                        out[y].append(m)
+            except:
+                continue
+    return out
+
+def julian_to_gregorian(jy, jm, jd):
+    if 1870 <= jy <= 1899:
+        offset = 12
+    elif 1900 <= jy <= 1923:
+        offset = 13
+    else:
+        return None, None, None
+    try:
+        dt = datetime(jy, jm, jd)
+        return (dt + timedelta(days=offset)).year, (dt + timedelta(days=offset)).month, (dt + timedelta(days=offset)).day
+    except:
+        return None, None, None
+
+def find_thursday_months_julian(target_day, filter_months):
+    years = range(1870, 1924)
+    months = range(1, 13)
+    out = defaultdict(list)
+
+    for y in years:
+        for m in months:
+            gy, gm, gd = julian_to_gregorian(y, m, target_day)
+            if gd is None:
+                continue
+            if datetime(gy, gm, gd).weekday() == 3:
+                if not filter_months or m in filter_months:
+                    out[y].append(m)
+    return out
+
+def compute(day, mode, filter_str):
+    f = None
+    if filter_str.strip():
+        try:
+            f = [int(x.strip()) for x in filter_str.split(",") if x.strip()]
+        except:
+            return "Invalid filter."
+
+    if mode == "greg":
+        res = find_thursday_months(day, f)
+    else:
+        res = find_thursday_months_julian(day, f)
+
+    lines = []
+    for year in sorted(res.keys()):
+        names = [datetime(year, m, 1).strftime("%B") for m in res[year]]
+        lines.append(f"{year}: {day} {', '.join(names)}")
+    return "\n".join(lines)
+
+</py-script>
+
+<script>
+let last_output = "";
+
+async function run_calc() {
+    const day = parseInt(document.getElementById("dayInput").value);
+    const mode = document.querySelector('input[name="cal"]:checked').value;
+    const filter = document.getElementById("monthFilter").value;
+
+    const box = document.getElementById("output");
+    box.textContent = "Processing...";
+
+    let result = await pyscript.runtime.globals.get("compute")(day, mode, filter);
+    last_output = result;
+    box.textContent = result;
+}
+
+function download_results() {
+    if (!last_output) return;
+    const blob = new Blob([last_output], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "thursday_results.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+}
+</script>
 
 </body>
 </html>
