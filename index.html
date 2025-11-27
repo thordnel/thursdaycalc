@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Python Terminal on GitHub Pages</title>
     
-    <link rel="stylesheet" href="https://pyscript.net/releases/2024.3.1/core.css">
-    <script type="module" src="https://pyscript.net/releases/2024.3.1/core.js"></script>
+    <!-- Load modern PyScript via CDN -->
+    <link rel="stylesheet" href="pyscript.net" />
+    <script defer src="pyscript.net"></script>
 
     <style>
         body {
@@ -15,39 +16,44 @@
             font-family: 'Consolas', 'Monaco', monospace; /* Monospace font */
             margin: 0;
             padding: 20px;
-            /* Ensures the terminal is the only scrollable item if its content overflows */
             overflow: hidden; 
         }
 
-        /* Styling the header text */
         h1, p {
             color: #DDD; /* Lighter color for non-terminal text */
         }
 
-        /* Target the terminal container created by PyScript */
-        .py-terminal {
+        /* Target the terminal container created by PyScript (now a custom element) */
+        py-terminal {
             background-color: #000;
             border: 2px solid #00FF00; /* Green border */
             min-height: 500px;
             width: 90%;
             margin-top: 20px;
             padding: 5px;
-        }
-
-        /* Ensuring the xterm.js canvas focuses correctly */
-        .py-terminal textarea,
-        .py-terminal input {
-            outline: none;
+            /* Ensure it is displayed as a block element */
+            display: block; 
         }
     </style>
+
+    <!-- 
+      *** CRITICAL WORKAROUND FOR GITHUB PAGES ***
+      
+      This script adds necessary Cross-Origin security headers required for web workers 
+      to function correctly on static hosts like GitHub Pages.
+      If workers still don't run, GitHub Pages might be too restrictive.
+    -->
+    <script src="unpkg.com"></script>
+
 </head>
 <body>
 
-    <h1>Web-Based Python REPL</h1>
-    <p>This is a live Python environment running in your browser via PyScript/Pyodide. Type a command (e.g., <code>print("Hello World")</code>, <code>2 + 2</code>) and press **Enter**.</p>
+    <h1>Web-Based Python REPL (Modern PyScript)</h1>
+    <p>This is a live Python environment running in your browser via PyScript/Pyodide. The workaround script above attempts to enable worker mode on GitHub Pages.</p>
     
-    <script type="py" terminal worker>
-    </script>
+    <!-- Modern way to create an interactive terminal (REPL) -->
+    <!-- The `worker` attribute attempts to run Python in a web worker thread -->
+    <py-terminal worker></py-terminal>
     
 </body>
 </html>
