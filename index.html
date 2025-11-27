@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Terminal on GitHub Pages</title>
+    
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.3.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.3.1/core.js"></script>
+
+    <style>
+        body {
+            background-color: #000; /* Black background */
+            color: #00FF00; /* Green text */
+            font-family: 'Consolas', 'Monaco', monospace; /* Monospace font */
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Target the terminal container created by PyScript */
+        .py-terminal {
+            background-color: #000;
+            border: 2px solid #00FF00; /* Green border */
+            min-height: 400px;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Welcome to the Python Web Terminal</h1>
+    <p>Type Python commands below and press Enter (e.g., <code>print("Hello")</code>, <code>x = 5; print(x * 2)</code>):</p>
+    
+    <script type="py" terminal worker>
+import code
+code.interact()
+    </script>
+    
+</body>
+</html>
