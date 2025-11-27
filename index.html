@@ -113,6 +113,8 @@ def compute(day, mode, filter_str):
 let last_output = "";
 
 async function run_calc() {
+    await pyscript.ready;   // Wait until PyScript is initialized
+
     const day = parseInt(document.getElementById("dayInput").value);
     const mode = document.querySelector('input[name="cal"]:checked').value;
     const filter = document.getElementById("monthFilter").value;
@@ -120,8 +122,11 @@ async function run_calc() {
     const box = document.getElementById("output");
     box.textContent = "Processing...";
 
-    // FIXED CALL
-    let compute_fn = pyodide.globals.get("compute");
+    // Get the interpreter instance
+    const py = pyscript.interpreter;
+
+    // Call Python function
+    let compute_fn = py.globals.get("compute");
     let result = compute_fn(day, mode, filter);
 
     last_output = result;
@@ -130,15 +135,19 @@ async function run_calc() {
 
 function download_results() {
     if (!last_output) return;
+
     const blob = new Blob([last_output], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
+
     const a = document.createElement("a");
     a.href = url;
     a.download = "thursday_results.txt";
     a.click();
+
     URL.revokeObjectURL(url);
 }
 </script>
+
 
 
 </body>
