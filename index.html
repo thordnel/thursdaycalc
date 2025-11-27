@@ -33,13 +33,12 @@ input, button { padding: 6px; font-size: 16px; }
 
 <br><br>
 
-<button onclick="run_calc()">Find Thursdays</button>
-<button onclick="download_results()">Download</button>
+<button id="runButton">Find Thursdays</button>
+<button id="downloadButton">Download</button>
 
 <h3>Results</h3>
 <div id="output"></div>
 
-<!-- Python logic -->
 <py-script>
 
 from datetime import datetime, timedelta
@@ -53,6 +52,7 @@ def find_thursday_months(target_day, filter_months):
     for y in years:
         for m in months:
             try:
+                # weekday() returns 0 for Monday, 3 for Thursday
                 if datetime(y, m, target_day).weekday() == 3:
                     if not filter_months or m in filter_months:
                         out[y].append(m)
@@ -61,6 +61,7 @@ def find_thursday_months(target_day, filter_months):
     return out
 
 def julian_to_gregorian(jy, jm, jd):
+    # Gregorian - Julian offset for the target period
     if 1870 <= jy <= 1899:
         offset = 12
     elif 1900 <= jy <= 1923:
@@ -82,10 +83,14 @@ def find_thursday_months_julian(target_day, filter_months):
 
     for y in years:
         for m in months:
+            # Convert Julian date to its equivalent Gregorian date
             gy, gm, gd = julian_to_gregorian(y, m, target_day)
             if gd is None:
                 continue
+            
+            # Check the weekday of the Gregorian date
             if datetime(gy, gm, gd).weekday() == 3:
+                # The Julian month 'm' is what is appended to the results
                 if not filter_months or m in filter_months:
                     out[y].append(m)
     return out
@@ -96,7 +101,11 @@ def compute(day, mode, filter_str):
         try:
             f = [int(x.strip()) for x in filter_str.split(",") if x.strip()]
         except:
-            return "Invalid filter."
+            return "Invalid month filter: must be comma-separated numbers (1-12)."
+
+    # Input validation
+    if not 1 <= day <= 31:
+        return "Invalid day: must be between 1 and 31."
 
     if mode == "greg":
         res = find_thursday_months(day, f)
@@ -105,53 +114,84 @@ def compute(day, mode, filter_str):
 
     lines = []
     for year in sorted(res.keys()):
+        # Get month names for display
         names = [datetime(year, m, 1).strftime("%B") for m in res[year]]
         lines.append(f"{year}: {day} {', '.join(names)}")
+    
+    if not lines:
+        return "No matching Thursdays found in the selected range."
+
     return "\n".join(lines)
 
 </py-script>
 
 <script>
 let last_output = "";
+const runButton = document.getElementById("runButton");
+const downloadButton = document.getElementById("downloadButton");
 
-// FULLY CORRECT API FOR PYSCRIPT 2024
-async function run_calc() {
-    // wait for interpreter
-    await pyscript.ready;
+// 1. Wait for the 'py-ready' event which fires when PyScript is fully loaded
+document.addEventListener("py-ready", () => {
+    // 2. Attach the click handler to the button *after* PyScript is ready
+    runButton.onclick = async function run_calc() {
+        // Since we are inside 'py-ready', 'pyscript' is guaranteed to be defined
+        
+        // This wait is still good practice for robustness
+        await pyscript.ready; 
 
-    const day = parseInt(document.getElementById("dayInput").value);
-    const mode = document.querySelector('input[name="cal"]:checked').value;
-    const filter = document.getElementById("monthFilter").value;
+        const day = parseInt(document.getElementById("dayInput").value);
+        const mode = document.querySelector('input[name="cal"]:checked').value;
+        const filter = document.getElementById("monthFilter").value;
 
-    const box = document.getElementById("output");
-    box.textContent = "Processing...";
+        const box = document.getElementById("output");
+        box.textContent = "Processing...";
 
-    // get the python interpreter
-    const py = pyscript.interpreter;
+        try {
+            // Get the Python interpreter
+            const py = pyscript.interpreter;
 
-    // get Python function
-    const compute_fn = py.globals.get("compute");
+            // Get Python function
+            const compute_fn = py.globals.get("compute");
 
-    // execute Python function
-    const result = compute_fn(day, mode, filter);
+            // Execute Python function
+            const result = compute_fn(day, mode, filter);
 
-    last_output = result;
-    box.textContent = result;
-}
+            last_output = result;
+            box.textContent = result;
+        } catch (error) {
+            box.textContent = `An error occurred: ${error.message}`;
+            console.error(error);
+        }
+    }
 
-function download_results() {
-    if (!last_output) return;
+    // Attach the download handler (no PyScript dependency)
+    downloadButton.onclick = function download_results() {
+        if (!last_output) return;
 
-    const blob = new Blob([last_output], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
+        const blob = new Blob([last_output], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "thursday_results.txt";
-    a.click();
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "thursday_results.txt";
+        a.click();
 
-    URL.revokeObjectURL(url);
-}
+        URL.revokeObjectURL(url);
+    }
+
+    // Set the button text back to normal once ready
+    runButton.textContent = "Find Thursdays";
+});
+
+// Optional: Inform the user that PyScript is loading
+runButton.textContent = "Loading...";
+runButton.disabled = true;
+
+// Re-enable button when ready
+document.addEventListener("py-ready", () => {
+    runButton.disabled = false;
+});
+
 </script>
 
 </body>
