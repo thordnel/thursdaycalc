@@ -9,40 +9,129 @@
 <script defer src="https://pyscript.net/releases/2022.12.1/pyscript.js"></script>
 
 <style>
-body { font-family: serif; max-width: 720px; margin: auto; padding: 20px; }
-input, button { padding: 6px; font-size: 16px; }
-#output { border: 1px solid #999; padding: 10px; height: 260px; overflow-y: auto; white-space: pre-wrap; }
+/* Body & Layout */
+body {
+    font-family: 'Georgia', serif;
+    background-color: #f7f7f7;
+    color: #333;
+    margin: 0;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    background-color: #fff;
+    max-width: 720px;
+    width: 100%;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+
+/* Headings */
+h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+/* Inputs & Buttons */
+input[type="number"],
+input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    margin-top: 6px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: sans-serif;
+    box-sizing: border-box;
+}
+
+label {
+    font-weight: 500;
+}
+
+button {
+    padding: 10px 18px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: 0.2s;
+}
+
+button#findBtn {
+    background-color: #4A90E2;
+    color: white;
+}
+
+button#findBtn:hover {
+    background-color: #357ABD;
+}
+
+button#downloadBtn {
+    background-color: #E2A94A;
+    color: white;
+}
+
+button#downloadBtn:hover {
+    background-color: #BA7E35;
+}
+
+/* Results box */
+#output {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 12px;
+    height: 280px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    background-color: #fefefe;
+    font-family: monospace;
+}
+
+/* Radio buttons inline */
+.radio-group {
+    margin-bottom: 20px;
+}
+
+.radio-group label {
+    margin-right: 15px;
+    font-weight: normal;
+}
 </style>
 </head>
 <body>
 
-<h2>Thursday Date Finder (1870–1923)</h2>
+<div class="container">
+    <h2>Thursday Date Finder (1870–1923)</h2>
 
-<label>Day: </label>
-<input id="dayInput" type="number" min="1" max="31" value="24">
+    <label>Day:</label>
+    <input id="dayInput" type="number" min="1" max="31" value="24">
 
-<br><br>
+    <label>Filter months (comma-separated, optional):</label>
+    <input id="monthFilter" type="text" placeholder="e.g. 1,3,5">
 
-<label>Filter months (comma-separated, optional): </label><br>
-<input id="monthFilter" type="text" placeholder="e.g. 1,3,5">
+    <div class="radio-group">
+        <label><input type="radio" name="cal" value="greg" checked> Gregorian</label>
+        <label><input type="radio" name="cal" value="jul"> Julian</label>
+    </div>
 
-<br><br>
+    <button id="findBtn">Find Thursdays</button>
+    <button id="downloadBtn">Download</button>
 
-<label><input type="radio" name="cal" value="greg" checked> Gregorian</label>
-<label><input type="radio" name="cal" value="jul"> Julian</label>
-
-<br><br>
-
-<button id="findBtn">Find Thursdays</button>
-<button id="downloadBtn">Download</button>
-
-<h3>Results</h3>
-<div id="output"></div>
+    <h3>Results</h3>
+    <div id="output"></div>
+</div>
 
 <py-script>
 from datetime import datetime, timedelta
 from collections import defaultdict
-from js import document
+from js import document, window
 from pyodide.ffi import create_proxy
 
 def find_thursday_months(target_day, filter_months):
@@ -102,10 +191,8 @@ def run_calc(ev=None):
     filter_str = document.getElementById("monthFilter").value
     result = compute(day, mode, filter_str)
     document.getElementById("output").textContent = result
-    # store last output for download
     window.last_output = result
 
-# create persistent proxy to avoid proxy garbage collection
 run_calc_proxy = create_proxy(run_calc)
 document.getElementById("findBtn").addEventListener("click", run_calc_proxy)
 </py-script>
@@ -121,7 +208,6 @@ function download_results() {
     a.click();
     URL.revokeObjectURL(url);
 }
-
 document.getElementById("downloadBtn").addEventListener("click", download_results);
 </script>
 
