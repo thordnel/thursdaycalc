@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Thursday Finder</title>
+<title>Thursday Finder (offline Pyodide)</title>
 
-<link rel="stylesheet" href="https://pyscript.net/releases/2022.12.1/pyscript.css">
-<script defer src="https://pyscript.net/releases/2022.12.1/pyscript.js"></script>
+<link rel="stylesheet" href="pyscript.css"> <!-- optional local copy; keep for styles -->
 
 <style>
-/* Body & Layout */
+/* Body & Layout (same as original) */
 body {
     font-family: 'Helvetica', serif;
     background: linear-gradient(135deg, #f0f4ff, #e6f0ff);
@@ -181,7 +180,15 @@ button#downloadBtn:hover {
     <div id="output"></div>
 </div>
 
-<py-script>
+<!-- Load local pyodide loader. Put the full Pyodide build inside ./pyodide/ -->
+<script src="pyodide/pyodide.js"></script>
+<script>
+async function main() {
+    // loadPyodide is provided by pyodide.js
+    const pyodide = await loadPyodide({ indexURL: "./pyodide/" });
+
+    // Run the same Python code you had inside <py-script>.
+    const pythonCode = `
 from datetime import datetime, timedelta
 from collections import defaultdict
 from js import document, window
@@ -236,7 +243,7 @@ def compute(day, mode, filter_str):
     for year in sorted(res.keys()):
         names = [datetime(year, m, 1).strftime("%B") for m in res[year]]
         lines.append(f"{year}: {day} {', '.join(names)}")
-    return "\n".join(lines)
+    return "\\n".join(lines)
 
 def run_calc(ev=None):
     day = int(document.getElementById("dayInput").value)
@@ -246,22 +253,33 @@ def run_calc(ev=None):
     document.getElementById("output").textContent = result
     window.last_output = result
 
+# Wire up the button inside Python (we create a JS proxy for run_calc)
 run_calc_proxy = create_proxy(run_calc)
 document.getElementById("findBtn").addEventListener("click", run_calc_proxy)
-</py-script>
 
-<script>
-function download_results() {
-    if (!window.last_output) return;
-    const blob = new Blob([window.last_output], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "thursday_results.txt";
-    a.click();
-    URL.revokeObjectURL(url);
+# Run once to populate results on load
+run_calc()
+`;
+    // Run async
+    await pyodide.runPythonAsync(pythonCode);
+
+    // Make a small JS helper for downloading results (same as original)
+    document.getElementById("downloadBtn").addEventListener("click", function () {
+        if (!window.last_output) return;
+        const blob = new Blob([window.last_output], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "thursday_results.txt";
+        a.click();
+        URL.revokeObjectURL(url);
+    });
 }
-document.getElementById("downloadBtn").addEventListener("click", download_results);
+
+main().catch(err => {
+    console.error("Failed to initialize Pyodide:", err);
+    document.getElementById("output").textContent = "Failed to initialize Pyodide: " + err;
+});
 </script>
 
 </body>
