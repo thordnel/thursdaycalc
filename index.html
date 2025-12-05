@@ -19,6 +19,8 @@ body {
     justify-content: center;
 }
 
+
+
 /* Card container */
 .container {
     background: linear-gradient(145deg, #ffffff, #f9fbff);
@@ -155,6 +157,17 @@ button#downloadBtn:hover {
         margin-bottom: 8px;
     }
 }
+
+  .pyodide-credit {
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+    margin: 28px 0 8px;
+    line-height: 1.4;
+  }
+  .pyodide-credit a { color: #357ABD; text-decoration: none; }
+  .pyodide-credit a:hover { text-decoration: underline; }
+
 </style>
 </head>
 <body>
@@ -178,6 +191,10 @@ button#downloadBtn:hover {
 
     <h3>Results</h3>
     <div id="output"></div>
+    <footer class="pyodide-credit">
+  This site uses <a href="https://pyodide.org/" target="_blank" rel="noopener noreferrer">Pyodide</a> (<a href="https://github.com/pyodide/pyodide/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT</a>). 
+  Hosted from <a href="https://github.com/thordnel/eclipsecalc" target="_blank" rel="noopener noreferrer">this repository</a>. Thanks to the Pyodide maintainers and contributors.
+</footer>
 </div>
 
 <!-- Load local pyodide loader. Put the full Pyodide build inside ./pyodide/ -->
