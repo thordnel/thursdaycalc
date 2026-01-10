@@ -8,6 +8,7 @@ const ASSETS = [
   './pyodide/pyodide.asm.data',
   './pyodide/repodata.json',
   './pyodide/pyodide_py.tar',
+  './pyodide/distutils.tar',
   './manifest.json',
   './icon.png'
 ];
