@@ -1,5 +1,4 @@
-// /Users/td.buringon/Documents/Github/eclipsecalc/sw.js
-const CACHE_NAME = 'thursday-finder-v1';
+const CACHE_NAME = 'thursday-finder-v2';
 const ASSETS = [
   './',
   './index.html',
