@@ -2,7 +2,6 @@ const CACHE_NAME = 'thursday-finder-v4';
 const ASSETS = [
   './',
   './index.html',
-  './pyscript.css',
   './pyodide/pyodide.js',
   './pyodide/pyodide.asm.js',
   './pyodide/pyodide.asm.wasm',
