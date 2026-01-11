@@ -1,4 +1,4 @@
-const CACHE_NAME = 'thursday-finder-v10';
+const CACHE_NAME = 'thursday-finder-v11';
 const ASSETS = [
   './',
   './index.html',
