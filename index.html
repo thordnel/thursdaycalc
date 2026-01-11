@@ -40,12 +40,21 @@ body {
 /* Headings */
 h2 {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 5px;
     font-weight: 700;
     background: linear-gradient(90deg, #4A90E2, #4AD991);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+h2 + h3 {
+    text-align: center;
+    font-style: italic;
+    margin-top: 0;
+    margin-bottom: 30px;
+    font-weight: normal;
+    color: #666;
 }
 
 /* Inputs */
@@ -261,20 +270,31 @@ def find_thursday_months_julian(target_day, filter_months, filter_years=None):
                     out[y].append(m)
     return out
 
+def parse_filter(s):
+    if not s or not s.strip():
+        return None
+    res = set()
+    for part in s.split(','):
+        part = part.strip()
+        if not part:
+            continue
+        if '-' in part:
+            start, end = map(int, part.split('-'))
+            res.update(range(start, end + 1))
+        else:
+            res.add(int(part))
+    return list(res)
+
 def compute(day, mode, month_filter_str, year_filter_str):
-    f_months = None
-    if month_filter_str.strip():
-        try:
-            f_months = [int(x.strip()) for x in month_filter_str.split(",") if x.strip()]
-        except:
-            return "Invalid month filter."
+    try:
+        f_months = parse_filter(month_filter_str)
+    except:
+        return "Invalid month filter."
     
-    f_years = None
-    if year_filter_str.strip():
-        try:
-            f_years = [int(x.strip()) for x in year_filter_str.split(",") if x.strip()]
-        except:
-            return "Invalid year filter."
+    try:
+        f_years = parse_filter(year_filter_str)
+    except:
+        return "Invalid year filter."
             
     res = find_thursday_months(day, f_months, f_years) if mode == "greg" else find_thursday_months_julian(day, f_months, f_years)
     lines = []
